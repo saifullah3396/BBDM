@@ -13,20 +13,20 @@ testing:
   sample_num: 5
 
 data:
-  dataset_name: 'ShabbyPages'
-  dataset_type: 'shabby_pages'
+  dataset_name: ShabbyPagesFixedResolution
+  dataset_type: shabby_pages_fixed_resolution
   dataset_config:
-    dataset_path: '/run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds/documents/ShabbyPages'
-    image_size: 256
+    dataset_path: /run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds/documents/ShabbyPages/PNG
+    image_size: 512
     to_normal: True
   train:
-    batch_size: 8
+    batch_size: 1
     shuffle: True
   val:
-    batch_size: 8
+    batch_size: 1
     shuffle: True
   test:
-    batch_size: 8
+    batch_size: 1
     # shuffle: False
 
 model:
@@ -59,8 +59,8 @@ model:
         double_z: false
         z_channels: 3
         resolution: 256
-        in_channels: 3
-        out_ch: 3
+        in_channels: 4
+        out_ch: 4
         ch: 128
         ch_mult: !!python/tuple
           - 1
@@ -102,9 +102,9 @@ model:
 
       UNetParams:
         image_size: 64
-        in_channels: 3
+        in_channels: 4
         model_channels: 128
-        out_channels: 3
+        out_channels: 4
         num_res_blocks: 2
         attention_resolutions: !!python/tuple
           - 32

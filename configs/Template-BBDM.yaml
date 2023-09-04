@@ -13,14 +13,12 @@ testing:
   sample_num: 5
 
 data:
-  dataset_name: 'dataset_name'
-  dataset_type: 'custom_aligned'
+  dataset_name: 'ShabbyPages'
+  dataset_type: 'shabby_pages'
   dataset_config:
-    dataset_path: 'dataset_path'
+    dataset_path: '/run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds/documents/ShabbyPages'
     image_size: 256
-    channels: 3
     to_normal: True
-    flip: False
   train:
     batch_size: 8
     shuffle: True
@@ -100,4 +98,4 @@ model:
         resblock_updown: True
         use_spatial_transformer: False
         context_dim:
-        condition_key: "SpatialRescaler" # options {"SpatialRescaler", "first_stage", "nocond"}
+        condition_key: "nocond" # options {"SpatialRescaler", "first_stage", "nocond"}
