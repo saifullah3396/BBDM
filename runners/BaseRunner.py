@@ -375,7 +375,7 @@ class BaseRunner(ABC):
         train_sampler = None
         val_sampler = None
         test_sampler = None
-        num_workers = 1
+        num_workers = 8
         if self.config.training.use_DDP:
             train_sampler = torch.utils.data.distributed.DistributedSampler(
                 train_dataset

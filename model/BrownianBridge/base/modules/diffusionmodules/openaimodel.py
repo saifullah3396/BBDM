@@ -589,10 +589,6 @@ class UNetModel(nn.Module):
         self.predict_codebook_ids = n_embed is not None
         self.condition_key = condition_key
 
-        self.gray_scale_converter = None
-        if gray_scale_converter:
-            self.gray_scale_converter = GrayScaleConverterModel(3, 1, 32)
-
         time_embed_dim = model_channels * 4
         self.time_embed = nn.Sequential(
             linear(model_channels, time_embed_dim),
@@ -850,9 +846,6 @@ class UNetModel(nn.Module):
         if self.num_classes is not None:
             assert y.shape == (x.shape[0],)
             emb = emb + self.label_emb(y)
-
-        if self.gray_scale_converter is not None:
-            x = self.gray_scale_converter(x)
 
         if self.condition_key != "nocond":
             x = th.cat([x, context], dim=1)

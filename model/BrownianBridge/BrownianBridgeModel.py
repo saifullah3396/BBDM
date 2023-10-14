@@ -8,7 +8,7 @@ from tqdm.autonotebook import tqdm
 import numpy as np
 
 from model.utils import extract, default
-from model.BrownianBridge.base.modules.diffusionmodules.openaimodel import UNetModel
+from model.BrownianBridge.base.modules.diffusionmodules.openaimodel import GrayScaleConverterModel, UNetModel
 from model.BrownianBridge.base.modules.encoders.modules import SpatialRescaler
 
 
@@ -38,6 +38,7 @@ class BrownianBridgeModel(nn.Module):
         self.condition_key = model_params.UNetParams.condition_key
 
         self.denoise_fn = UNetModel(**vars(model_params.UNetParams))
+        self.gray_scale_converter = GrayScaleConverterModel()
 
     def register_schedule(self):
         T = self.num_timesteps
@@ -86,6 +87,8 @@ class BrownianBridgeModel(nn.Module):
         return self.denoise_fn.parameters()
 
     def forward(self, x, y, context=None):
+        if self.gray_scale_converter is not None:
+            y = self.gray_scale_converter(y)
         if self.condition_key == "nocond":
             context = None
         else:
@@ -110,7 +113,6 @@ class BrownianBridgeModel(nn.Module):
 
         x_t, objective = self.q_sample(x0, y, t, noise)
         objective_recon = self.denoise_fn(x_t, timesteps=t, context=context)
-        print(x_t.shape, x0.shape, y.shape)
 
         if self.loss_type == 'l1':
             recloss = (objective - objective_recon).abs().mean()
@@ -223,4 +225,5 @@ class BrownianBridgeModel(nn.Module):
 
     @torch.no_grad()
     def sample(self, y, context=None, clip_denoised=True, sample_mid_step=False):
+        y = self.gray_scale_converter(y)
         return self.p_sample_loop(y, context, clip_denoised, sample_mid_step)

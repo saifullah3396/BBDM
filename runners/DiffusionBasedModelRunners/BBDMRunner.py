@@ -215,7 +215,6 @@ class BBDMRunner(DiffusionBaseRunner):
         (x, x_name), (x_cond, x_cond_name) = batch
         x = x.to(self.config.training.device[0])
         x_cond = x_cond.to(self.config.training.device[0])
-        print(x.shape, x_cond.shape)
 
         loss, additional_info = net(x, x_cond)
         if write:
