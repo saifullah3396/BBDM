@@ -16,7 +16,8 @@ data:
   dataset_name: 'ShabbyPages'
   dataset_type: 'shabby_pages'
   dataset_config:
-    dataset_path: /run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds-sds/documents/shabby-pages/data/patches_msgpacks/
+    # dataset_path: /run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds-sds/documents/shabby-pages/data/patches_msgpacks/
+    dataset_path: /ds-sds/documents/shabby-pages/data/patches_msgpacks/
     image_size: 256
     to_normal: True
   train:
