@@ -1,3 +1,4 @@
+import itertools
 import pdb
 
 import torch
@@ -38,7 +39,7 @@ class BrownianBridgeModel(nn.Module):
         self.condition_key = model_params.UNetParams.condition_key
 
         self.denoise_fn = UNetModel(**vars(model_params.UNetParams))
-        self.gray_scale_converter = GrayScaleConverterModel()
+        self.gray_scale_converter = GrayScaleConverterModel(3, 1, 64)
 
     def register_schedule(self):
         T = self.num_timesteps
@@ -84,7 +85,9 @@ class BrownianBridgeModel(nn.Module):
         return self
 
     def get_parameters(self):
-        return self.denoise_fn.parameters()
+        return itertools.chain(
+                self.denoise_fn.parameters(), self.gray_scale_converter.parameters()
+            )
 
     def forward(self, x, y, context=None):
         if self.gray_scale_converter is not None:
