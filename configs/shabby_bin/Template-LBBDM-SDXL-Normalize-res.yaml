@@ -19,25 +19,26 @@ data:
     # dataset_path: /run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds/documents/ShabbyPages/PNG
     dataset_path: /ds/documents/ShabbyPages/PNG
     image_size: 512
+    channels: 3
     to_normal: True
   train:
-    batch_size: 12
+    batch_size: 32
     shuffle: True
   val:
-    batch_size: 12
+    batch_size: 32
     shuffle: True
   test:
-    batch_size: 12
+    batch_size: 32
     # shuffle: False
 
 model:
-  model_name: "LBBDM-f4" # part of result path
+  model_name: "LBBDM-f4-Normalize-res-s-0.25" # part of result path
   model_type: "LBBDM" # specify a module
   latent_before_quant_conv: False
-  normalize_latent: False
-  only_load_latent_mean_std: False
-  # model_load_path: /home/saifullah/phd/phd_projects/under_work/p#shabby_bin/BBDM/results/ShabbyPages/LBBDM-f16/checkpoint/last_model.pth # model checkpoint path
-  # optim_sche_load_path: /home/saifullah/phd/phd_projects/under_work/p#shabby_bin/BBDM/results/ShabbyPages/LBBDM-f16/checkpoint/last_optim_sche.pth  # optimizer scheduler checkpoint path
+  normalize_latent: True
+  only_load_latent_mean_std: True
+  model_load_path: /netscratch/saifullah/BBMD/results/ShabbyPagesFixedResolution/LBBDM-f4-Normalize/checkpoint/top_model_epoch_4.pth # model checkpoint path
+  # optim_sche_load_path: /netscratch/saifullah/BBMD/results/ShabbyPagesFixedResolution/LBBDM-f4-Normalize/checkpoint//top_optim_sche_epoch_4.pth  # optimizer scheduler checkpoint path
 
 
   EMA:
@@ -90,7 +91,7 @@ model:
 
     params:
       mt_type: 'linear' # options {'linear', 'sin'}
-      objective: 'grad' # options {'grad', 'noise', 'ysubx'}
+      objective: 'ysubx' # options {'grad', 'noise', 'ysubx'}
       loss_type: 'l1' # options {'l1', 'l2'}
 
       skip_sample: True
@@ -99,7 +100,7 @@ model:
 
       num_timesteps: 1000 # timesteps
       eta: 1.0 # DDIM reverse process eta
-      max_var: 1.0 # maximum variance
+      max_var: 0.25 # maximum variance
 
       UNetParams:
         image_size: 64

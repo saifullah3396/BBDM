@@ -375,7 +375,7 @@ class BaseRunner(ABC):
         train_sampler = None
         val_sampler = None
         test_sampler = None
-        num_workers = 0
+        num_workers = 1
         if self.config.training.use_DDP:
             train_sampler = torch.utils.data.distributed.DistributedSampler(
                 train_dataset
@@ -493,11 +493,11 @@ class BaseRunner(ABC):
                         )
 
                     with torch.no_grad():
-                        if self.global_step % 50 == 0:
-                            val_batch = next(iter(val_loader))
-                            self.validation_step(
-                                val_batch=val_batch, epoch=epoch, step=self.global_step
-                            )
+                        # if self.global_step %  == 0:
+                        #     val_batch = next(iter(val_loader))
+                        #     self.validation_step(
+                        #         val_batch=val_batch, epoch=epoch, step=self.global_step
+                        #     )
 
                         if (
                             self.global_step

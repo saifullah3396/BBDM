@@ -31,13 +31,13 @@ data:
     # shuffle: False
 
 model:
-  model_name: "LBBDM-f4" # part of result path
+  model_name: "LBBDM-f4-Normalize" # part of result path
   model_type: "LBBDM" # specify a module
   latent_before_quant_conv: False
-  normalize_latent: False
+  normalize_latent: True
   only_load_latent_mean_std: False
-  # model_load_path: /home/saifullah/phd/phd_projects/under_work/p#shabby_bin/BBDM/results/ShabbyPages/LBBDM-f16/checkpoint/last_model.pth # model checkpoint path
-  # optim_sche_load_path: /home/saifullah/phd/phd_projects/under_work/p#shabby_bin/BBDM/results/ShabbyPages/LBBDM-f16/checkpoint/last_optim_sche.pth  # optimizer scheduler checkpoint path
+  model_load_path: /netscratch/saifullah/BBMD/results/ShabbyPagesFixedResolution/LBBDM-f4-Normalize/checkpoint/top_model_epoch_4.pth # model checkpoint path
+  optim_sche_load_path: /netscratch/saifullah/BBMD/results/ShabbyPagesFixedResolution/LBBDM-f4-Normalize/checkpoint//top_optim_sche_epoch_4.pth  # optimizer scheduler checkpoint path
 
 
   EMA:

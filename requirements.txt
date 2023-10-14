@@ -1,0 +1,4 @@
+einops 
+torchsummary
+lpips
+pytorch_fid

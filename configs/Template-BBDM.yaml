@@ -6,7 +6,7 @@ training:
   save_interval: 20
   sample_interval: 2
   validation_interval: 20
-  accumulate_grad_batches: 2
+  accumulate_grad_batches: 4
 
 testing:
   clip_denoised: True
@@ -16,17 +16,17 @@ data:
   dataset_name: 'ShabbyPages'
   dataset_type: 'shabby_pages'
   dataset_config:
-    dataset_path: '/run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds/documents/ShabbyPages'
+    dataset_path: /run/user/3841/gvfs/sftp:host=login1.pegasus.kl.dfki.de/ds-sds/documents/shabby-pages/data/patches_msgpacks/
     image_size: 256
     to_normal: True
   train:
-    batch_size: 8
+    batch_size: 1
     shuffle: True
   val:
-    batch_size: 8
+    batch_size: 1
     shuffle: True
   test:
-    batch_size: 8
+    batch_size: 1
     # shuffle: False
 
 model:
@@ -46,8 +46,8 @@ model:
 
   CondStageParams:
     n_stages: 2
-    in_channels: 3
-    out_channels: 3
+    in_channels: 1
+    out_channels: 1
 
   BB:
     optimizer:
@@ -65,7 +65,7 @@ model:
 
     params:
       mt_type: 'linear' # options {'linear', 'sin'}
-      objective: 'grad' # options {'grad', 'noise', 'ysubx'}
+      objective: 'ysubx' # options {'grad', 'noise', 'ysubx'}
       loss_type: 'l1' # options {'l1', 'l2'}
 
       skip_sample: True
@@ -77,24 +77,25 @@ model:
       max_var: 1.0 # maximum variance
 
       UNetParams:
-        image_size: 64
-        in_channels: 6
-        model_channels: 128
-        out_channels: 3
+        image_size: 256
+        in_channels: 1
+        model_channels: 64
+        out_channels: 1
         num_res_blocks: 2
         attention_resolutions: !!python/tuple
-          - 32
+          # - 32
           - 16
           - 8
+          # - 0 # this puts attentions to 0
         channel_mult: !!python/tuple
           - 1
           - 4
           - 8
         conv_resample: True
         dims: 2
-        num_heads: 8
+        num_heads: 2
         num_head_channels: 64
-        use_scale_shift_norm: True
+        use_scale_shift_norm: False
         resblock_updown: True
         use_spatial_transformer: False
         context_dim:

@@ -65,7 +65,6 @@ class LatentBrownianBridgeModel(BrownianBridgeModel):
         return self
 
     def forward(self, x, x_cond, context=None):
-        print(x, x_cond)
         with torch.no_grad():
             x_latent = self.encode(x, cond=False)
             x_cond_latent = self.encode(x_cond, cond=True)
@@ -103,9 +102,13 @@ class LatentBrownianBridgeModel(BrownianBridgeModel):
         x_latent = self.vqgan.encode(x).latent_dist.sample()
         if normalize:
             if cond:
-                x_latent = (x_latent - self.cond_latent_mean) / self.cond_latent_std
+                x_latent = (x_latent) / self.cond_latent_std
             else:
-                x_latent = (x_latent - self.ori_latent_mean) / self.ori_latent_std
+                x_latent = (x_latent) / self.ori_latent_std
+            # if cond:
+            #     x_latent = (x_latent - self.cond_latent_mean) / self.cond_latent_std
+            # else:
+            #     x_latent = (x_latent - self.ori_latent_mean) / self.ori_latent_std
         return x_latent
 
     @torch.no_grad()
@@ -115,9 +118,13 @@ class LatentBrownianBridgeModel(BrownianBridgeModel):
         )
         if normalize:
             if cond:
-                x_latent = x_latent * self.cond_latent_std + self.cond_latent_mean
+                x_latent = x_latent * self.cond_latent_std
             else:
-                x_latent = x_latent * self.ori_latent_std + self.ori_latent_mean
+                x_latent = x_latent * self.ori_latent_std
+            # if cond:
+            #     x_latent = x_latent * self.cond_latent_std + self.cond_latent_mean
+            # else:
+            #     x_latent = x_latent * self.ori_latent_std + self.ori_latent_mean
         out = self.vqgan.decode(x_latent).sample
         return out
 

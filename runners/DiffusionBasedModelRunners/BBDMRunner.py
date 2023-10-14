@@ -107,13 +107,14 @@ class BBDMRunner(DiffusionBaseRunner):
                 model_states["cond_latent_std"] = self.net.cond_latent_std
         return model_states, optimizer_scheduler_states
 
+    @torch.no_grad()
     def get_latent_mean_std(self):
         train_dataset, val_dataset, test_dataset = get_dataset(self.config.data)
         train_loader = DataLoader(
             train_dataset,
-            batch_size=self.config.data.train.batch_size,
+            batch_size=48,
             shuffle=True,
-            num_workers=0,
+            num_workers=1,
             drop_last=True,
         )
 
@@ -214,6 +215,7 @@ class BBDMRunner(DiffusionBaseRunner):
         (x, x_name), (x_cond, x_cond_name) = batch
         x = x.to(self.config.training.device[0])
         x_cond = x_cond.to(self.config.training.device[0])
+        print(x.shape, x_cond.shape)
 
         loss, additional_info = net(x, x_cond)
         if write:

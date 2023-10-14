@@ -16,7 +16,7 @@ def parse_args_and_config():
 
     parser.add_argument('-c', '--config', type=str, default='BB_base.yml', help='Path to the config file')
     parser.add_argument('-s', '--seed', type=int, default=1234, help='Random seed')
-    parser.add_argument('-r', '--result_path', type=str, default='results', help="The directory to save results")
+    parser.add_argument('-r', '--result_path', type=str, default='/netscratch/saifullah/BBMD/results', help="The directory to save results")
 
     parser.add_argument('-t', '--train', action='store_true', default=False, help='train the model')
     parser.add_argument('--sample_to_eval', action='store_true', default=False, help='sample for evaluation')
@@ -61,13 +61,13 @@ def set_random_seed(SEED=1234):
     torch.cuda.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
     torch.backends.cudnn.enabled = True
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cudnn.deterministic = False
 
 
 def DDP_run_fn(rank, world_size, config):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = config.args.port
+    # os.environ['MASTER_ADDR'] = 'localhost'
+    # os.environ['MASTER_PORT'] = (int(os.environ["SLURM_JOB_ID"]) + 10007) % 16384 + 49152
     dist.init_process_group(backend='nccl', rank=rank, world_size=world_size)
 
     set_random_seed(config.args.seed)

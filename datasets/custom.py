@@ -258,6 +258,92 @@ class CustomInpaintingDataset(Dataset):
         return (image, image_name), (cond_image, image_name)
 
 
+@Registers.datasets.register_with_name("shabby_pages_fixed_resolution_gt_res")
+class ShabbyPagesFixedResolution(data.Dataset):
+    def __init__(self, dataset_config, stage="train"):
+        self.dataset_path = dataset_config.dataset_path
+        self.image_size = dataset_config.image_size
+        self.stage = stage
+        self.stage = "validation" if self.stage == "val" else self.stage
+
+        if self.stage == "train":
+            self.tfs = transforms.Compose(
+                [
+                    SquarePad(),
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
+                    ),
+                ]
+            )
+        else:
+            self.tfs = transforms.Compose(
+                [
+                    SquarePad(),
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
+                    ),
+                ]
+            )
+
+            self.gray_tfs = transforms.Compose(
+                [
+                    SquarePad(),
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
+                    ),
+                ]
+            )
+        self.data_reader = MsgpackReader(
+            Path(self.dataset_path) / self.stage / "train_512x512.msgpack"
+        )
+
+    def __getitem__(self, index):
+        import io
+
+        sample = pickle.loads(self.data_reader[index]["data"])
+        cond_image = Image.open(io.BytesIO(sample["image"]))
+        gt_image = Image.open(io.BytesIO(sample["gt_image"]))
+
+        cond_image = self.tfs(cond_image)
+        gt_image = self.tfs(gt_image)
+
+        # apply data augmentation
+        if self.stage == "train":
+            # random horizontal flipping
+            if random.random() > 0.5:
+                gt_image = TF.hflip(gt_image)
+                cond_image = TF.hflip(cond_image)
+
+            # random vertical flipping
+            if random.random() > 0.5:
+                gt_image = TF.vflip(gt_image)
+                cond_image = TF.vflip(cond_image)
+
+        # print("stage", self.stage)
+        # print(cond_image.shape, gt_image.shape)
+        # import matplotlib.pyplot as plt
+
+        # plt.imshow(cond_image.permute(1,2,0))
+        # plt.show()
+
+        # plt.imshow(gt_image.permute(1, 2, 0))
+        # plt.show()
+        # print(cond_image.min(), cond_image.max(), cond_image.mean(), cond_image.std())
+        # print(gt_image.min(), gt_image.max(), gt_image.mean(), gt_image.std())
+
+        # here we set gt_image to be the resolution
+        return (cond_image-gt_image, sample["gt_image_file_path"]), (
+            cond_image,
+            sample["image_file_path"],
+        )
+
+    def __len__(self):
+        return len(self.data_reader)
+
+
 @Registers.datasets.register_with_name("shabby_pages_fixed_resolution")
 class ShabbyPagesFixedResolution(data.Dataset):
     def __init__(self, dataset_config, stage="train"):
@@ -351,53 +437,26 @@ class ShabbyPages(data.Dataset):
         self.stage = stage
         self.stage = "validation" if self.stage == "val" else self.stage
 
-        if self.stage == "train":
-            self.tfs = transforms.Compose(
-                [
-                    transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
-                    ),
-                ]
-            )
-        else:
-            self.tfs = transforms.Compose(
-                [
-                    transforms.Resize((self.image_size, self.image_size)),
-                    transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
-                    ),
-                ]
-            )
-
-            self.gray_tfs = transforms.Compose(
-                [
-                    transforms.Resize((self.image_size, self.image_size)),
-                    transforms.ToTensor(),
-                    transforms.Normalize(
-                        mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]
-                    ),
-                ]
-            )
+        self.tfs = transforms.Compose(
+            [
+                SquarePad(),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.5], std=[0.5]
+                ),
+            ]
+        )
+        self.gray_tfs = self.tfs
         self.data_reader = MsgpackReader(
-            Path(self.dataset_path) / self.stage / "512x512.msgpack"
+            Path(self.dataset_path) / self.stage / "train_512x512.msgpack"
         )
 
     def __getitem__(self, index):
         import io
-        from skimage.filters import threshold_sauvola
 
         sample = pickle.loads(self.data_reader[index]["data"])
         cond_image = Image.open(io.BytesIO(sample["image"]))
-        gt_image = Image.open(io.BytesIO(sample["gt_image"]))
-
-        # binarize gt_images
-        # gt_image = np.array(gt_image.convert("L"))
-        # window_size = 25
-        # thresh_sauvola = threshold_sauvola(gt_image, window_size=window_size)
-        # gt_image = gt_image > thresh_sauvola
-        # gt_image = Image.fromarray(gt_image).convert("RGB")
+        gt_image = Image.open(io.BytesIO(sample["gt_image"])).convert("L")
 
         cond_image = self.tfs(cond_image)
         gt_image = self.gray_tfs(gt_image)
@@ -424,7 +483,16 @@ class ShabbyPages(data.Dataset):
                 gt_image = TF.vflip(gt_image)
                 cond_image = TF.vflip(cond_image)
             # print(cond_image.shape, gt_image.shape)
-
+        else:
+            # random crop
+            i, j, h, w = transforms.RandomCrop.get_params(
+                gt_image, output_size=(self.image_size, self.image_size)
+            )
+            i, j, h, w = transforms.RandomCrop.get_params(
+                cond_image, output_size=(self.image_size, self.image_size)
+            )
+            cond_image = TF.crop(cond_image, i, j, h, w)
+            gt_image = TF.crop(gt_image, i, j, h, w)
         # print("stage", self.stage)
         # print(cond_image.shape, gt_image.shape)
         # import matplotlib.pyplot as plt
@@ -434,8 +502,8 @@ class ShabbyPages(data.Dataset):
 
         # plt.imshow(gt_image.permute(1, 2, 0))
         # plt.show()
-        # print(cond_image.min(), cond_image.max(), cond_image.mean(), cond_image.std())
-        # print(gt_image.min(), gt_image.max(), gt_image.mean(), gt_image.std())
+        # print(cond_image.shape, cond_image.min(), cond_image.max(), cond_image.mean(), cond_image.std())
+        # print(gt_image.shape, gt_image.min(), gt_image.max(), gt_image.mean(), gt_image.std())
 
         return (gt_image, sample["gt_image_file_path"]), (
             cond_image,
